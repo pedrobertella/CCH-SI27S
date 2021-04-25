@@ -11,7 +11,6 @@ livre = "0"
 map = []
 for x in range(mapXSize):
     line = []
-
     for y in range(mapYSize):
         n = random.randint(0,1)
         if n == 0:
