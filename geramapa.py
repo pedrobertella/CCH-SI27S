@@ -1,25 +1,41 @@
 import random
 import numpy
 
-mapXSize = 21
-mapYSize = 32
+mapXSize = 32
+mapXHalfSize = 16
+mapYSize = 21
 
-# P = parede, C = caixa, B = barreira, E = pedra, O = poste, A = agua, N = cone;
-obstaculos = ["P", "C", "B", "E", "O", "A", "N"]
-livre = "0"
+# P = parede, C = caixa, B = barreira, E = pedra, O = post_, N = cone;
+obstaculos = ["P", "C", "B", "E", "O", "N"]
+agua = "~"
+livre = "_"
 
 map = []
-for x in range(mapXSize):
+
+#gerando metade do mapa aleatoria
+for x in range(0, mapXHalfSize, 1):
     line = []
-    for y in range(mapYSize):
+    for y in range(0, mapYSize, 1):
         n = random.randint(0,1)
-        if n == 0:
+        if n == 0:#0=livre 1=obstaculo/agua 
             line.append(livre)
-        else:
-            line.append(obstaculos[random.randint(0,6)])
+        else: 
+            if(random.randint(1,7)<2):#verificar se vai ser água ou obstaculo
+                line.append(agua)
+            else:
+                line.append(obstaculos[random.randint(0,5)])
 
     map.append(line)
 
+#espelhando metade de cima para baixo
+for x in range(mapXHalfSize-1, -1, -1):
+    line = []
+    for y in map[x]:
+        line.append(y)
+
+    map.append(line)
+
+#print do mapa
 for x in map:
     for y in x:
         print(y, end="")
