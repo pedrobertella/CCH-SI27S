@@ -8,7 +8,7 @@ mapYSize = 21
 # P = parede, C = caixa, B = barreira, E = pedra, O = post_, N = cone;
 obstaculos = ["P", "C", "B", "E", "O", "N"]
 agua = "~"
-livre = "_"
+livre = " "
 
 map = []
 
@@ -36,7 +36,17 @@ for x in range(mapXHalfSize-1, -1, -1):
     map.append(line)
 
 #print do mapa
+for i in range(mapYSize+2): 
+    print("#" , end="")
+print("")
+
 for x in map:
+    print("#", end="")
     for y in x:
         print(y, end="")
-    print("")
+    print("#")
+
+for i in range(mapYSize+2): 
+    print("#" , end="")
+print("")
+
