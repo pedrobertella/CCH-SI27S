@@ -1,43 +1,55 @@
-from geramapa2 import Mapa
+from selector import RankedSelector
+from mapa import Mapa
+import random
 
-TAMANHO_DA_POPULACAO = 100
+TAMANHO_DA_POPULACAO = 20
 TAXA_DE_REPRODUCAO = 0.3
 TAXA_DE_MUTACAO = 0.3
 
-populacao = List<Mapa>
+CHANCE_DE_REPRODUCAO_MIN = 1
+CHANCE_DE_REPRODUCAO_MAX = 100
+
+populacao = []
 geracao = 0
 
 def iniciar_populacao():
     for i in range( TAMANHO_DA_POPULACAO ):
         mapa = Mapa()
         mapa.posicionar_objetos()
-        mapa.printar_mapa()
+        mapa.printar_mapa_expandido()
         populacao.append(mapa)
 
 def avaliar_populacao():
     for individuo in populacao:
-        mapa_reduzido = individuo.mapa
-        individuo.expandir_objetos(2)
         individuo.calcular_aptidao()
-        individuo.mapa = mapa_reduzido
+
+    populacao.sort(key = lambda elem : elem.aptidao, reverse=True)
 
 def criterio_de_parada():
     return geracao > 10
 
-def selecionar_individuos():
-    populacao.sort(key = lambda elem : elem.aptidao)
-    populacao_reproducao = int(TAMANHO_DA_POPULACAO * TAXA_DE_REPRODUCAO)
-   
-    if(populacao_reproducao % 2 != 0): 
-        populacao_reproducao += 1
+def aplicar_cruzamento():
+    global populacao, geracao
+    rankedSelector = RankedSelector( populacao, CHANCE_DE_REPRODUCAO_MIN, CHANCE_DE_REPRODUCAO_MAX )
+    nova_populacao = []
+
+    while( len(nova_populacao) < TAMANHO_DA_POPULACAO ):
+        indA = rankedSelector.selecionar_individuo()
+        indB = rankedSelector.selecionar_individuo()
+
+        nova_populacao.append( indA.cruzar( indB )) 
+        nova_populacao.append( indB.cruzar( indA ))
     
-    return populacao[:populacao_reproducao]
+    populacao.clear()
+    populacao += nova_populacao
+    print( populacao )
+    geracao += 1
 
-def cruzar( a,b ):
-    pass
 
-# minimo = 16
-
-iniciar_populacao()
-avaliar_populacao()
-selecionar_individuos()
+if __name__ == '__main__':
+    iniciar_populacao()
+    while( not criterio_de_parada() ):
+        avaliar_populacao()
+        aplicar_cruzamento()
+    avaliar_populacao()
+    populacao[0].printar_mapa_expandido()

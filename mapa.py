@@ -21,10 +21,10 @@ class Mapa:
     }
     
     objetosSprites = {
-        objetos['vazio']: ' ' ,
-        objetos['agua']: '~', 
-        objetos['parede']: '#', 
-        objetos['vegetacao']: '´', 
+        objetos['vazio']: '  ' ,
+        objetos['agua']: '~~', 
+        objetos['parede']: '[]', 
+        objetos['vegetacao']: '`´', 
     }
 
     _default_qtd_objetos = { 
@@ -33,16 +33,32 @@ class Mapa:
         'vegetacao':3,
     }
 
+    fator_de_expancao = 2
+
     def __init__(self):
         self.mapa = np.zeros( (H, W), dtype=np.uintc )
         self.aptidao = 0
 
-    def cruzar( self, outroMapa):
-        # caruuanoadmaoimdaowd
-        # return (novoMapa,novoMapa);
-        pass
+    def cruzar( self, outro ):
+        pontos_de_corte = [ (H/4), (H/4) * 3]
+        
+        filho = self.mapa.copy()
 
-    def calcular_vizinhanca(self, y,x ):
+        is_corte = False
+        
+        for i in range( len(filho) ):
+            if( i in pontos_de_corte ):
+                is_corte = not is_corte
+
+            if( is_corte ):
+                filho[i] = outro.mapa[i]
+
+        resultado = Mapa()
+        resultado.mapa = filho
+        
+        return resultado
+
+    def calcular_vizinhanca(self,mapa, y,x ):
         objCount= np.zeros( len(self.objetos), dtype=np.uintc ) 
 
         for i in [-1,0,1]:
@@ -52,7 +68,7 @@ class Mapa:
                 and not (i == 0 and j == 0) 
                 and 0 <= y+i < H 
                 and 0 <= x+j < W ):
-                    objCount[ self.mapa[ y+i, x+j ] ] += 1
+                    objCount[ mapa[ y+i, x+j ] ] += 1
 
         return objCount
 
@@ -74,21 +90,24 @@ class Mapa:
             for x in range(len(self.mapa[y])):
                 self.mapa[H-1-y,W-1-x] = self.mapa[y,x]
 
-    def expandir_objetos(self, iteracoes = 2 ):
+    def expandir_objetos(self, iteracoes = fator_de_expancao ):
+        resultado = self.mapa.copy()
+        
         for i in range(iteracoes):
-            novoMapa = self.mapa.copy()
-            
-            for y in range(len(self.mapa)):
-                for x in range(len(self.mapa[y])):
+            novo_mapa = resultado.copy()
+
+            for y in range(len(resultado)):
+                for x in range(len(resultado[y])):
 
                     if( self.mapa[y,x] == self.objetos['vazio'] ): 
-                        vizinhanca = self.calcular_vizinhanca(y,x)
+                        vizinhanca = self.calcular_vizinhanca(resultado,y,x)
                         
                         for k in self.objetos:
                             if( k != 'vazio' and vizinhanca[self.objetos[k]] > 0 ):
-                                novoMapa[y,x] = self.objetos[k]
+                                novo_mapa[y,x] = self.objetos[k]
+            resultado = novo_mapa
 
-            mapa = novoMapa
+        return resultado
 
     def calcular_menor_caminho(self):         
         grid = Grid(matrix=self.converter_mapa_to_grid())
@@ -105,21 +124,28 @@ class Mapa:
         return len(path)
 
     def converter_mapa_to_grid(self):
+        mapa_expandido = self.expandir_objetos()
+
         matriz = []
-        for linha in self.mapa:
+        for linha in mapa_expandido:
             matriz_linha = []
             for item in linha:
                 matriz_linha.append(1 if item == self.objetos['vazio'] or item == self.objetos['vegetacao'] else 0)
             matriz.append(matriz_linha) 
         return matriz
             
-    def printar_mapa(self):
+    def printar_mapa_expandido( self ):
+        self._printar_mapa( self.expandir_objetos() )
 
+    def printar_mapa_reduzido( self ):
+        self._printar_mapa( self.mapa )
+
+    def _printar_mapa(self, mapa):
         for i in range(H+2): 
             print("#" , end="")
         print("")
 
-        for x in self.mapa:
+        for x in mapa:
             print("#", end="")
             for cell in x:
                 print(self.objetosSprites[cell], end="")
