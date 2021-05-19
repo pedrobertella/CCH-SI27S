@@ -50,3 +50,5 @@ for i in range(mapYSize+2):
     print("#" , end="")
 print("")
 
+
+        
